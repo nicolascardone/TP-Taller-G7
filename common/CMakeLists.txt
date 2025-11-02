@@ -17,4 +17,7 @@ target_sources(taller_common
     queue.h
     constants.h
     message.h
+    vector2d.h
+    map.h
+    mapEntities.h
     )

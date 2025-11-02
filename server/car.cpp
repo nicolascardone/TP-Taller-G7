@@ -33,6 +33,10 @@ bool Car::isDestroyed() const {
     return destroyed;
 }
 
+Vector2D<float> Car::getDirection() const {
+    return direction;
+}
+
 
 void Car::accelerate() {
     speed += acceleration;
@@ -99,10 +103,10 @@ void Car::upgradeAcceleration() {
 
 
 void Car::upgradeHealth(){
-    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
+    health += Constants::HEALTH_UPGRADE;
 }
 
 
 void Car::repair() {
-    health = maxHealth;
+    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
 }

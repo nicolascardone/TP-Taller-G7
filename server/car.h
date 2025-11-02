@@ -49,6 +49,12 @@ public:
     float getHealth() const;
 
     /*
+    * Obtiene la dirección del auto
+    *
+    * */
+    Vector2D<float> getDirection() const;
+
+    /*
     * Verifica si el auto está destruido
     *
     * */
