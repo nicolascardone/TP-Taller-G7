@@ -68,5 +68,18 @@
         "cfenv": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp"
-    }
+    },
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": true,
+        "markdown": true,
+        "scminput": false
+    },
+    "github.copilot.advanced": {
+        "debug.overrideEngine": "gpt-4",
+        "debug.testOverrideProxyUrl": "",
+        "debug.overrideProxyUrl": ""
+    },
+    "github.copilot.editor.enableAutoCompletions": true,
+    "github.copilot.editor.enableCodeActions": true
 }
