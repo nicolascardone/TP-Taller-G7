@@ -30,7 +30,7 @@ void Car::setCarBox2DBody(Vector2D<float> position) {
 
     // Forma del auto: rectángulo simple
     
-    b2Polygon shape = b2MakeBox(1.20f / 2.0f, 1.28f / 2.0f);
+    b2Polygon shape = b2MakeBox(0.46875f, 0.5f);
     b2ShapeDef shapeDef = b2DefaultShapeDef();
     shapeDef.density = weight;    
     shapeDef.enableContactEvents = true; 

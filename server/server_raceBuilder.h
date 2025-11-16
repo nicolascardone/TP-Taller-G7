@@ -6,13 +6,13 @@
 #include "car.h"
 #include <iostream>
 
-
 class RaceBuilder {
 private:
     b2WorldId world;
     std::vector<std::shared_ptr<Car>> cars;
     float nextSpawnX;
     float nextSpawnY;
+
     
 public:
 

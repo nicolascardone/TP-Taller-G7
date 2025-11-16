@@ -34,7 +34,7 @@ void RaceBuilder::addSelectCar(int carType) {
     std::shared_ptr<Car> car;
     switch (carType) {
         case 1:
-            car = std::make_shared<Car>(world, Vector2D<float>{position.x / Constants::SCALE_METER_TO_PIXEL, position.y / Constants::SCALE_METER_TO_PIXEL}, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 100.0f);
+            car = std::make_shared<Car>(world, Vector2D<float>{position.x / 20, position.y / 20}, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 100.0f);
             break;
         case 2:
             car = std::make_shared<Car>(world, Vector2D<float>{position.x, position.y}, 100.0f, 250.0f, 40.0f, 300.0f, 40.0f, 150.0f);

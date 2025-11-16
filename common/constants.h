@@ -25,7 +25,7 @@ namespace  Constants {
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;
-    static constexpr int MAX_PLAYERS_IN_GAME = 2; // por ahora
+    static constexpr int MAX_PLAYERS_IN_GAME = 1; // por ahora
 
     // constantes de tamanios de queues
     static const unsigned int CLIENT_QUEUE_MAXSIZE = 100;
@@ -69,7 +69,9 @@ namespace  Constants {
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
     // renderizado con fisica en metros
-    static constexpr float SCALE_METER_TO_PIXEL = 25.0f;
+    static constexpr float SCALE_METER_TO_PIXEL = 32.0f;
+    static constexpr float MAP_HEIGHT_PIXELS = 4672.0f; 
+    static constexpr float MAP_HEIGHT_METERS = MAP_HEIGHT_PIXELS / SCALE_METER_TO_PIXEL;
 
 }
 #endif //CONSTANTS_H

@@ -232,6 +232,9 @@ std::vector<MapObject> MapLoader::loadCollidersFromYaml(const std::string& filep
         // Un objeto es válido si es un polígono (Box2D lo construye a partir de los puntos)
         // O si es un rectángulo y tiene ancho y alto > 0.
         if (obj.isPolygon || (obj.width > 0.0f && obj.height > 0.0f)) {
+            std::cout << "[MapLoader] Objeto válido cargado: X=" << obj.x << ", Y=" << obj.y 
+                      << ", W=" << obj.width << ", H=" << obj.height 
+                      << (obj.isPolygon ? " (Polígono)" : " (Rectángulo)") << std::endl;
             validObjects.push_back(obj);
         } else {
             removedCount++;
