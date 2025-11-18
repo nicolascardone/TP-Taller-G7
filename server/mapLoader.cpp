@@ -112,23 +112,20 @@ Map MapLoader::loadMapFromYaml(const std::string& filepath) {
 
 
 
+
 std::vector<MapObject> MapLoader::loadCollidersFromYaml(const std::string& filepath) {
     std::vector<MapObject> objects;
 
     std::ifstream file(filepath);
     if (!file.is_open()) {
-        std::cerr << "[MapLoader ERROR] No se pudo abrir: " << filepath << std::endl;
+        std::cerr << "[MapLoader ERROR] No se pudo abrir el archivo: " << filepath << std::endl;
         return objects;
     }
 
     std::string line;
     MapObject current{};
     bool parsingObject = false;
-    bool parsingPolygon = false;
-    
-    bool readingPointX = false;
-    float lastReadX = 0.0f;
-
+        
 
     while (std::getline(file, line)) {
         // limpiar indentación
@@ -138,82 +135,49 @@ std::vector<MapObject> MapLoader::loadCollidersFromYaml(const std::string& filep
             continue; 
         }
 
-        // Detección del inicio de un NUEVO OBJETO con el marcador de lista YAML.
-        if (line.find('-') == 0) {
-            // Un colisionador comienza con '- height:' o '- id:', no con '- x:'
-            if (line.find(" height:") != std::string::npos || line.find(" id:") != std::string::npos) {
-                
-                if (parsingObject) {
-                    objects.push_back(current);
-                }
-                
-                // Iniciar un nuevo objeto
-                current = {};
-                current.isPolygon = false;
-                parsingObject = true;
-                parsingPolygon = false;
-                readingPointX = false;
-                
-                // Procesar 'height' si está en la línea de inicio
-                if (line.find(" height:") != std::string::npos) {
-                    current.height = extractFloatValue(line);
-                }
-                continue;
+        // --- 1. Detección de inicio de NUEVO OBJETO ('- height:' o '- id:') ---
+        // Esto indica que el objeto anterior ha terminado y uno nuevo comienza.
+        if (line.find('-') == 0 && (line.find(" height:") != std::string::npos || line.find(" id:") != std::string::npos)) {
+            
+            if (parsingObject) {
+                // El objeto anterior está completo.
+                objects.push_back(current);
             }
+            
+            // Iniciar un nuevo objeto (ahora siempre es un rectángulo)
+            current = {};
+            current.isPolygon = false; 
+            parsingObject = true;
+            
+            // Si la altura está en la línea de inicio, la leemos y escalamos inmediatamente.
+            if (line.find(" height:") != std::string::npos) {
+                current.height = extractFloatValue(line);
+            }
+            continue;
         }
 
-
+        // Si no estamos parseando un objeto, ignoramos las líneas hasta encontrar el inicio ('-').
         if (!parsingObject) {
             continue;
         }
 
-        // --- 1. PARSING DE PUNTOS DEL POLÍGONO ---
-        if (parsingPolygon) {
-            
-            if (line.rfind("- x:", 0) == 0) {
-                lastReadX = extractFloatValue(line);
-                readingPointX = true;
-                continue;
-                
-            } else if (readingPointX && line.rfind("y:", 0) == 0) {
-                b2Vec2 point;
-                point.x = lastReadX / Constants::SCALE_METER_TO_PIXEL;
-                point.y = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL;
-                
-                current.polygonPoints.push_back(point);
-                
-                readingPointX = false;
-                continue;
+        // --- 2. PARSING DE PROPIEDADES DE RECTÁNGULO (Aplicando la Escala) ---
+        // Leemos las propiedades restantes, sin importar el orden.
 
-            } else if (line.find("rotation:") != std::string::npos || line.find("x:") != std::string::npos ||
-                       line.find("width:") != std::string::npos || line.find("height:") != std::string::npos) 
-            {
-                // El bloque del polígono terminó, la línea actual es una propiedad de objeto.
-                parsingPolygon = false;
-                readingPointX = false;
-            } else {
-                continue;
-            }
-        }
-
-
-        // --- 2. DETECCIÓN DE PROPIEDADES BÁSICAS ---
         if (line.rfind("x:", 0) == 0) {
-            current.x = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL;
+            current.x = extractFloatValue(line);
         } 
         else if (line.rfind("y:", 0) == 0) {
-            current.y = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL;
+            current.y = extractFloatValue(line);
         } 
         else if (line.rfind("width:", 0) == 0) {
-            current.width = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL ;
+            current.width = extractFloatValue(line);
         } 
         else if (line.rfind("height:", 0) == 0) {
-            current.height = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL ;
+            // Solo si no fue leída en la línea de inicio.
+            current.height = extractFloatValue(line);
         }
-        else if (line.rfind("polygon:", 0) == 0) {
-            current.isPolygon = true;
-            parsingPolygon = true;
-        }
+        // Las propiedades como 'id', 'rotation', etc., se ignoran.
     }
 
     // Procesa el ÚLTIMO objeto al salir del bucle.
@@ -229,17 +193,15 @@ std::vector<MapObject> MapLoader::loadCollidersFromYaml(const std::string& filep
     int removedCount = 0;
     
     for (const auto& obj : objects) {
-        // Un objeto es válido si es un polígono (Box2D lo construye a partir de los puntos)
-        // O si es un rectángulo y tiene ancho y alto > 0.
-        if (obj.isPolygon || (obj.width > 0.0f && obj.height > 0.0f)) {
-            std::cout << "[MapLoader] Objeto válido cargado: X=" << obj.x << ", Y=" << obj.y 
-                      << ", W=" << obj.width << ", H=" << obj.height 
-                      << (obj.isPolygon ? " (Polígono)" : " (Rectángulo)") << std::endl;
+        // Solo verificamos rectángulos (isPolygon = false) y sus dimensiones.
+        if (obj.width > 0.0f && obj.height > 0.0f) {
+            //std::cout << "[MapLoader] Rectángulo válido cargado: X=" << obj.x << ", Y=" << obj.y 
+            //          << ", W=" << obj.width << ", H=" << obj.height << std::endl;
             validObjects.push_back(obj);
         } else {
             removedCount++;
-            // Opcional: imprimir el objeto que se está eliminando para depuración
-            // std::cerr << "[MapLoader WARNING] Objeto descartado (dimensión inválida): X=" << obj.x << ", Y=" << obj.y << ", W=" << obj.width << ", H=" << obj.height << std::endl;
+            std::cerr << "[MapLoader WARNING] Objeto descartado (dimensión inválida): X=" << obj.x << ", Y=" << obj.y 
+                      << ", W=" << obj.width << ", H=" << obj.height << std::endl;
         }
     }
     

@@ -69,9 +69,9 @@ namespace  Constants {
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
     // renderizado con fisica en metros
-    static constexpr float SCALE_METER_TO_PIXEL = 32.0f;
+    static constexpr float SCALE_METER_TO_PIXEL = 25.0f;
+    static constexpr float PTM = 32.0f; // pixels to meters
     static constexpr float MAP_HEIGHT_PIXELS = 4672.0f; 
     static constexpr float MAP_HEIGHT_METERS = MAP_HEIGHT_PIXELS / SCALE_METER_TO_PIXEL;
-
 }
 #endif //CONSTANTS_H

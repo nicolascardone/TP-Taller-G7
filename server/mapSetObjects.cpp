@@ -3,7 +3,6 @@
 #include <vector>
 
 
-
 void MapSetObjects::createStaticBody(b2WorldId world, const b2Vec2& position, const std::vector<b2Polygon>& fixtures) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
@@ -13,9 +12,26 @@ void MapSetObjects::createStaticBody(b2WorldId world, const b2Vec2& position, co
     
     b2ShapeDef shapeDef = b2DefaultShapeDef();
 
+    
+    //  // Configuración de Densidad/Fricción (Asegurarse que no sea cero)
+    // shapeDef.density = 1.0f; // Importante para cualquier fixture.
+
+
+    // // --- CONFIGURACIÓN CRÍTICA DE COLISIÓN ---
+    // // Asumimos que el coche (el cuerpo dinámico) también usa 0x0001.
+    shapeDef.filter.categoryBits = 0x0001; // El Muro pertenece a la Categoría 0x0001
+    shapeDef.filter.maskBits = 0x0001;     // El Muro colisiona con la Categoría 0x0001 (¡el Coche!)
+
+    // std::cout << "[Box2D] Muro Creado: Cat=" << shapeDef.filter.categoryBits 
+    //           << ", Mask=" << shapeDef.filter.maskBits 
+    //           << ", Posición: (" << position.x << ", " << position.y << ")\n";    
+
     for (const auto& shape : fixtures) {
         b2CreatePolygonShape(body, &shapeDef, &shape);
     }
+    std::cout << "[Box2D] Cuerpo estático creado en posición (" 
+              << position.x << ", " << position.y << ") con " 
+              << fixtures.size() << " fixtures." << std::endl;
 }
 
 
@@ -23,123 +39,39 @@ void MapSetObjects::createBodiesFromObjects(
     b2WorldId world,
     const std::vector<MapObject>& objects)
 {
-    std::cout << "[Box2D] Creando " << objects.size() << " cuerpos estáticos..." << std::endl;
+    std::cout << "[Box2D] Creando " << objects.size() << " cuerpos estáticos (solo rectángulos)..." << std::endl;
 
     for (const auto& obj : objects) {
         
+        // 1. Calcular las dimensiones a la mitad (Half-Extents)
+        // b2MakeBox requiere las semi-dimensiones (metros / 2).
+        // obj.width y obj.height YA están en metros.
+        float halfWidthMeters = obj.width / Constants::SCALE_METER_TO_PIXEL ;
+        float halfHeightMeters = obj.height / Constants::SCALE_METER_TO_PIXEL ;
+            
+        // 2. Crear el Box (el fixture)
+        // Se utiliza un vector para permitir la composición futura de figuras complejas.
+        b2Polygon poly = b2MakeBox(halfWidthMeters, halfHeightMeters); 
+
         std::vector<b2Polygon> fixtures;
+        fixtures.push_back(poly);
 
-        // if (!obj.isPolygon) {
-        //     // --- 1. OBJETO RECTÁNGULO (BOX) ---
+        // 3. Calcular la posición CENTRAL del cuerpo (bodyDef.position)
+        b2Vec2 pos;
             
-        //     // Los valores obj.width y obj.height YA ESTÁN EN METROS.
-        //     // 1.1. Calcular dimensiones en metros (half-widths)
-        //     float halfWidthMeters = obj.width * 0.5f;
-        //     float halfHeightMeters = obj.height * 0.5f;
+        // Posición X: Esquina Izquierda (obj.x) + Half-Width (Centrado)
+        pos.x = obj.x + halfWidthMeters;
             
-        //     // 1.2. Crear el Box. b2MakeBox espera half-dimensions.
-        //     b2Polygon poly = b2MakeBox(halfWidthMeters, halfHeightMeters); 
-
-        //     fixtures.push_back(poly);
-
-        //     // 1.3. Calcular la posición CENTRAL en el sistema de Box2D (Y invertida)
-        //     b2Vec2 pos;
+        // Posición Y: Inversión del eje Y y Centrado
+        // Posición Central Y-down (Tiled): obj.y + halfHeightMeters
+        // Conversión a Posición Central Y-up (Box2D): MAP_HEIGHT_METERS - (Y_down_center)
+        pos.y = Constants::MAP_HEIGHT_METERS - (obj.y - halfHeightMeters);
             
-        //     // Posición X: Tiled X (metros) + Half-Width (metros)
-        //     // obj.x YA está en metros.
-        //     pos.x = obj.x + halfWidthMeters;
-            
-        //     // Posición Y: Inversión del eje Y (MAP_HEIGHT_METERS - Tiled Y en Metros) - Centrado (Half-Height)
-        //     // obj.y YA está en metros.
-        //     pos.y = Constants::MAP_HEIGHT_METERS - obj.y - halfHeightMeters;
-            
-        //     createStaticBody(world, pos, fixtures);
-        // }
-        if (!obj.isPolygon) {
-
-                float halfWidth = obj.width ;   // metros
-                float halfHeight = obj.height ; // metros
-
-                b2Polygon poly = b2MakeBox(halfWidth, halfHeight);
-                fixtures.push_back(poly);
-
-                // posición CENTRAL del rectángulo en METROS (corrigiendo eje Y)
-                b2Vec2 pos;
-                pos.x = obj.x + halfWidth;
-
-                // invertir eje Y: (altura total - y - alto)
-                pos.y = Constants::MAP_HEIGHT_METERS - obj.y - halfHeight;
-
-                createStaticBody(world, pos, fixtures);
-        }
-
-        else {
-
-            if (obj.polygonPoints.size() < 3) continue;
-
-            std::vector<b2Vec2> scaledVertices;
-            scaledVertices.reserve(obj.polygonPoints.size());
-
-            for (const auto& pt : obj.polygonPoints) {
-                // YA en metros → solo invertir la Y local
-                scaledVertices.push_back({ pt.x, -pt.y });
-            }
-
-            b2Hull hull = b2ComputeHull(scaledVertices.data(),
-                                        (int)scaledVertices.size());
-            if (hull.count == 0) continue;
-
-            b2Polygon poly = b2MakePolygon(&hull, 0.0f);
-            fixtures.push_back(poly);
-
-            // posición base en METROS
-            b2Vec2 pos;
-            pos.x = obj.x;
-            pos.y = Constants::MAP_HEIGHT_METERS - obj.y;
-
-            createStaticBody(world, pos, fixtures);
-            // --- 2. OBJETO POLÍGONO ---
-
-            // if (obj.polygonPoints.size() < 3) continue;
-            // if (obj.polygonPoints.size() > 8) {
-            //     std::cerr << "Advertencia: Polígono ignorado, Box2D C API solo soporta 8 vértices convexos." << std::endl;
-            //     continue;
-            // }
-
-            // // 2.1. Vértices (YA ESTÁN EN METROS)
-            // std::vector<b2Vec2> scaledVertices;
-            // scaledVertices.reserve(obj.polygonPoints.size());
-            
-            // for (const auto& point : obj.polygonPoints) {
-            //     // SOLO se invierte el eje Y local del polígono (los valores ya son metros).
-            //     scaledVertices.push_back({
-            //         point.x, 
-            //         -point.y 
-            //     });
-            // }
-
-            // // 2.2. Calcular el Convex Hull y crear la forma
-            // b2Hull hull = b2ComputeHull(scaledVertices.data(), (int)scaledVertices.size());
-            
-            // if (hull.count > 0) {
-            //     b2Polygon poly = b2MakePolygon(&hull, 0.0f);
-            //     fixtures.push_back(poly);
-
-            //     // 2.3. Posición del cuerpo: Tiled X/Y de la esquina superior izquierda (invertida)
-            //     b2Vec2 pos;
-                
-            //     // obj.x YA está en metros.
-            //     pos.x = obj.x;
-                
-            //     // obj.y YA está en metros.
-            //     // Posición Y: Inversión del eje Y
-            //     pos.y = Constants::MAP_HEIGHT_METERS - obj.y; 
-                
-            //     createStaticBody(world, pos, fixtures);
-            // } else {
-            //      std::cerr << "Advertencia: Falló el cálculo del Convex Hull. Polígono ignorado." << std::endl;
-            // }
-        }
+        createStaticBody(world, pos, fixtures);
     }
-    std::cout << "[Box2D] Creación de cuerpos estáticos finalizada." << std::endl;
+    
+    std::cout << "[Box2D] Creación de cuerpos estáticos finalizada, total creados: " << objects.size() << std::endl;
+
+
+   
 }
