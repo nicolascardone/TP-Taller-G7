@@ -8,6 +8,7 @@
 #include "waitingWindow.h"
 #include "carSelectWindow.h"
 #include "common/constants.h"
+#include "qtMusicManager.h"
 
 class Client;
 
@@ -22,6 +23,7 @@ public:
     explicit ClientQtManager(Client* client);
     ~ClientQtManager();
     void start();
+    void stop();
 
 signals:
     void startGameRequested(); // se conecta al cliente SDL
@@ -34,10 +36,12 @@ private:
     std::unique_ptr<QApplication> app;
 
     void showLoginWindow();
+
     void showLobbyWindow(const QString& playerName);
     void setupCreateButton(LobbyMenuWindow* lobby);
     void setupJoinButton(LobbyMenuWindow* lobby);
     void setupSelectCarButton(LobbyMenuWindow* lobby);
+
     void waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow* lobby);
 };
 

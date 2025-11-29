@@ -6,6 +6,8 @@
 #include <QPixmap>
 #include <QPalette>
 
+#include "qtMusicManager.h"
+
 LobbyMenuWindow::LobbyMenuWindow(Client* client, const QString& playerName, QWidget *parent)
     : QWidget(parent), client(client), playerName(playerName) {
 
@@ -52,6 +54,11 @@ LobbyMenuWindow::LobbyMenuWindow(Client* client, const QString& playerName, QWid
         );
         layout->addWidget(btn, 0, Qt::AlignCenter);
     }
+
+    //se agrega boton para silenciar musica
+    auto muteButton = QtMusicManager::createMuteButton(this);
+    muteButton->move(width() - 60, 20);
+    muteButton->raise();
 }
 
 QPushButton* LobbyMenuWindow::getCreateButton() { return createButton; }

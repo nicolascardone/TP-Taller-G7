@@ -5,6 +5,8 @@
 #include <QMessageBox>
 #include <QMovie>
 
+#include "qtMusicManager.h"
+
 WaitingWindow::WaitingWindow(QWidget* parent)
     : QWidget(parent) {
 
@@ -49,6 +51,11 @@ WaitingWindow::WaitingWindow(QWidget* parent)
     layout->addWidget(cancelButton);
 
     setLayout(layout);
+
+    //se agrega boton para silenciar musica
+    auto muteButton = QtMusicManager::createMuteButton(this);
+    muteButton->move(width() - 60, 20);
+    muteButton->raise();
 }
 
 void WaitingWindow::onCancelClicked() {

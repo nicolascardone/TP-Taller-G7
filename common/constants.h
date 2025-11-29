@@ -24,6 +24,7 @@ namespace  Constants {
     static constexpr unsigned char LIST_GAMES = 0x24;
     static constexpr unsigned char GAME_START = 0x25;
     static constexpr unsigned char SERVER_DISCONNECTED = 0x26;
+    static constexpr unsigned char CANCEL_GAME = 0x27;
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;
@@ -38,6 +39,7 @@ namespace  Constants {
     static const std::string INPUT_LISTAR = "listar";
     static const std::string INPUT_CREAR = "crear";
     static const std::string INPUT_UNIRSE = "unirse";
+    static const std::string INPUT_CANCEL_GAME = "cancelar";
 
     // constantes de errores
     static const std::string ERROR_PARAMETERS_QUANTITY =

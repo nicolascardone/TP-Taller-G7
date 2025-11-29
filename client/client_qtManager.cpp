@@ -14,13 +14,12 @@
 ClientQtManager::ClientQtManager(Client* client)
     : client(client), app(nullptr) {}
 
-ClientQtManager::~ClientQtManager() = default;
-
 void ClientQtManager::start() {
     int argc = 0;
     char** argv = nullptr;
     app = std::make_unique<QApplication>(argc, argv);
     showLoginWindow();
+    QtMusicManager::instance().playBackgroundMusic("assets/music/menu_music.mp3");
     app->exec();
 }
 
@@ -257,7 +256,6 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
     (void)QtConcurrent::run([this, waiting, lobby]() {
 
         Event event = client->getEventQueue().pop();
-
         QMetaObject::invokeMethod(waiting, [this, event, waiting, lobby]() {
 
             // evento de jugador aceptado
@@ -274,11 +272,20 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
 
             // evento para comenzar partida
             if (event.type == EventType::GAME_START) {
-
                 waiting->close();
                 lobby->close();
                 client->changePlayingStatus();
-                emit waiting->gameShouldStart();
+                stop();
+                return;
+            }
+
+            // evento de desconexión del server
+            if (event.type == EventType::SERVER_DISCONNECTED) {
+                waiting->close();
+                lobby->close();
+                QMessageBox::warning(nullptr, "Servidor desconectado",
+                                     "El servidor se ha desconectado.");
+                stop();
                 return;
             }
 
@@ -290,4 +297,40 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
 
         }, Qt::QueuedConnection);
     });
+}
+
+QPushButton* createMuteButton(QWidget* parent) {
+    QPushButton* muteButton = new QPushButton(parent);
+    muteButton->setText(QtMusicManager::instance().isMuted() ? "🔊" : "🔇");
+    muteButton->setFixedSize(40, 40);
+
+    muteButton->setStyleSheet(
+        "QPushButton {"
+        "   background-color: rgba(255,0,0,0.7);"
+        "   border: 2px solid white;"
+        "   border-radius: 20px;"
+        "   font-size: 20px;"
+        "   color: white;"
+        "}"
+        "QPushButton:hover {"
+        "   background-color: rgba(255,50,50,0.9);"
+        "}"
+    );
+
+    QObject::connect(muteButton, &QPushButton::clicked, [muteButton]() {
+        QtMusicManager::instance().mute();
+        muteButton->setText(QtMusicManager::instance().isMuted() ? "🔊" : "🔇");
+    });
+
+    return muteButton;
+}
+
+
+void ClientQtManager::stop() {
+    QtMusicManager::instance().stop();
+    app->quit();
+}
+
+ClientQtManager::~ClientQtManager() {
+    QtMusicManager::instance().stop();
 }

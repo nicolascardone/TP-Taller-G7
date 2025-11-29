@@ -25,4 +25,5 @@ target_sources(taller_client
     client_qtManager.h
     carSelectWindow.h
     carConfirmDialog.h
+    qtMusicManager.h
     )
