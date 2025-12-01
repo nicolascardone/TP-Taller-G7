@@ -1,12 +1,10 @@
 game_config:
   
   max_players_in_game: 2             
-  max_races: 3              
+  max_races: 1              
 
 timing:
-
-  thread_sleep_ms: 16        
-  ticks_per_second: 60       
+      
   max_race_minutes: 10       
   not_finish_penalize_seconds: 40 
   upgrade_wait_seconds: 15   

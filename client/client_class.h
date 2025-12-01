@@ -41,6 +41,8 @@ private:
     std::atomic<int> selfId{-1};
     int selectedCarId = -1;
     std::string playerName;
+    bool displayingResults = false;
+    std::chrono::steady_clock::time_point resultsDisplayStartTime;
 
     void loadTexturesAndAssets_(ClientDibujador& dib);
 };

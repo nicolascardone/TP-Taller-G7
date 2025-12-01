@@ -388,11 +388,34 @@ void GameLogic::simulateRacePhysics(const float dt, int currentTick) {
 
     for (auto const& [id, car] : cars) {
         car->applyMovement();
-        car->applyFriction(); 
+        car->applyFriction();
+        if(car->isDestroyed()) {
+            handlePlayerElimination(id);
+            cars.erase(id);
+        }
     }
     checkFinishRaceByTime(currentTick);
     b2World_Step(world, dt, 4);
     checkCollisions(); // Verificar colisiones después de actualizar la física
+}
+
+
+void GameLogic::handlePlayerElimination(int playerId) {
+    
+    raceLogic.removePlayer(playerId);
+    std::cout << "[GameLogic] Jugador " << playerId << " ha sido destruido. Retirado de RaceLogic.\n";
+    playersToKick.push_back(playerId);
+
+    // if (raceLogic.getActiveRacePlayers() <= 1 && raceState == IN_PROGRESS) {
+    //     finishGame();
+    // }
+}
+
+
+std::vector<int> GameLogic::getPlayersToKick() {
+    std::vector<int> result = std::move(playersToKick);
+    playersToKick.clear(); // Opcional, pero explícito es mejor
+    return result;
 }
 
 
@@ -422,6 +445,11 @@ void GameLogic::finishGame() {
     
     }
     raceState = GAME_OVER;
+}
+
+
+bool GameLogic::isGameOver() const {
+    return raceState == GAME_OVER;
 }
 
 

@@ -159,8 +159,22 @@ void Client::run() {
                 dib.updateRaceState(*myRace);
             }
 
-            if (snapshot.gameFinished) {
+            if (snapshot.gameFinished && !displayingResults) {
                 dib.setGameFinished(true, snapshot.leaderboards);
+                resultsDisplayStartTime = std::chrono::steady_clock::now();
+                displayingResults = true;
+                std::cout << "DEBUG: Partida finalizada. Iniciando delay de 10s para cierre.\n";
+            }
+            if (displayingResults) {
+                auto now = std::chrono::steady_clock::now();
+                auto elapsed = now - resultsDisplayStartTime;
+
+                if (elapsed >= Constants::GAME_OVER_WAIT_SECONDS * std::chrono::seconds(1)) {
+                    // ¡Tiempo agotado!
+                    std::cout << "DEBUG: Delay de " << Constants::GAME_OVER_WAIT_SECONDS 
+                              << " segundos terminado. Cerrando cliente SDL.\n";
+                    running = false; // <-- Esto detiene el bucle principal (while(running))
+                }
             }
             
             if (snapshot.raceFinished && !lastRaceFinished) {
@@ -183,10 +197,19 @@ void Client::run() {
             std::this_thread::sleep_for(FRAME_MS - elapsed);
         }
     }
+
+    receiver.stop(); 
+    sender.stop();
+    
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     IMG_Quit();
     SDL_Quit();
+    
+    
+    // 2. Unir (Join): Esperar a que terminen antes de destruir las colas/protocolo.
+    receiver.join();
+    sender.join();
 }
 
 Queue<Event>& Client::getEventQueue() {

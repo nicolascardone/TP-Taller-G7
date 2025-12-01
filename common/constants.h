@@ -158,8 +158,9 @@ namespace  Constants {
     inline int MAX_RACES; 
 
     // times
-    inline int THREAD_SLEEP_MS;
-    inline int TICKS_PER_SECOND;
+    static constexpr int THREAD_SLEEP_MS = 16;
+    static constexpr int TICKS_PER_SECOND = 60;
+    static constexpr int GAME_OVER_WAIT_SECONDS = 10; 
     inline int MAX_RACE_MINUTES;
     
     inline int MAX_TICKS; // Calculado: MAX_RACE_MINUTES * 60 * TICKS_PER_SECOND

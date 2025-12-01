@@ -28,8 +28,6 @@ void SettingsLoader::load(const std::string& filepath) {
 
         // --- TIMING ---
         const auto& timing = config["timing"];
-        Constants::THREAD_SLEEP_MS = getInt(timing, "thread_sleep_ms");
-        Constants::TICKS_PER_SECOND = getInt(timing, "ticks_per_second");
         Constants::MAX_RACE_MINUTES = getInt(timing, "max_race_minutes");
         Constants::NOT_FINISH_PENALIZE_SECONDS = getInt(timing, "not_finish_penalize_seconds");
         Constants::UPGRADE_WAIT_SECONDS = getInt(timing, "upgrade_wait_seconds");

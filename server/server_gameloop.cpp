@@ -73,6 +73,36 @@ void GameLoop::simulateGame(int currentTick) {
     processCommandQueue();
     gameLogic.update(currentTick);
 
+    // std::vector<int> destroyedPlayersIds = gameLogic.getPlayersToKick();
+    
+    // if (!destroyedPlayersIds.empty()) {
+    //     std::cout << "[GameLoop] Procesando eliminacion de " 
+    //               << destroyedPlayersIds.size() << " jugadores destruidos.\n";
+                  
+    //     std::lock_guard<std::mutex> lock(clientListMutex); 
+
+    //     for (int destroyedId : destroyedPlayersIds) {
+            
+    //         auto it = std::find_if(clientHandlers.begin(), clientHandlers.end(), 
+    //                                [destroyedId](ClientHandler* handler) {
+    //                                    return handler->getId() == destroyedId;
+    //                                });
+
+    //         if (it != clientHandlers.end()) {
+    //             ClientHandler* handlerToKick = *it;
+                
+    //             std::cout << "[GameLoop] Jugador " << destroyedId 
+    //                       << " kickeado por destruccion. Eliminando Handler.\n";
+                          
+    //             parentGame->removeClientHandler(handlerToKick); 
+    //         }
+    //     }
+    // }
+
+    if(gameLogic.isGameOver()){
+        running = false;
+    }
+
     std::shared_ptr<Snapshot> snapshotToSend = gameLogic.getSnapshot( EventType::NONE);
     {
         std::lock_guard<std::mutex> lock(clientListMutex);

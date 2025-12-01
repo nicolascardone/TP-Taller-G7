@@ -57,6 +57,8 @@ private:
     std::map<int, bool> hasSelectedUpgrade;
     std::map<int, int> selectedUpgradeId;
 
+    std::vector<int> playersToKick;
+
 public:
 
     /*
@@ -83,6 +85,18 @@ public:
     * */
    void update(int currentTick);
 
+   /*
+   * Maneja la eliminación de un jugador del juego, agregándolo a la lista de jugadores a expulsar.
+   *
+   * */
+   void handlePlayerElimination(int playerId); 
+
+    /*
+    * Devuelve la lista de jugadores que deben ser expulsados del juego
+    *
+    * */
+   std::vector<int> getPlayersToKick(); 
+    
     /*
     * Crea y devuelve un snapshot del estado actual del juego
     *
@@ -178,6 +192,12 @@ public:
     *
     * */
     void finishGame();
+
+    /*
+    * Verifica si el juego ha terminado
+    *
+    * */
+    bool isGameOver() const;
 
     /*
     * Verifica si se debe finalizar una carrera por tiempo y actualiza el estado
